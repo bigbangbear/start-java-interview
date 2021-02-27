@@ -1,6 +1,6 @@
 ### HashCode
 
-> - [ ] hashCode的作用？hashCode相等的两个对象一定相等吗？equals呢？反过来相等吗？
+> - [x] hashCode的作用？hashCode相等的两个对象一定相等吗？equals呢？反过来相等吗？
 
 主要：用于查找的便利性，比如： HashMap 中查找存储的位置
 
@@ -8,7 +8,7 @@
 
 ### 同步类容器
 
-> - [ ] 实现原理？
+> - [x] 实现原理？
 
 答：通过 `synchronized` 关键字实现的同步类容器，由于性能问题，不建议使用
 
@@ -243,6 +243,8 @@ monitorenter：
 
 `notify()/notifyAll()`：随机唤醒一个/所有等待该对象锁的线程，进入就绪队列等待CPU的调度；
 
+### 锁
+
 > - [ ] AQS (abstract queue synchronizer) 的作用
 
 AQS：是用来构建锁与同步器的框架 (是什么)，底层通过 CAS 修改共享变量 state 实现互斥访问，同时利用 FIFO 队列实现线程间的阻塞排队与唤醒 (怎么做)，ReentranceLock、CountDownLatch 都是基于 AQS 实现的
@@ -266,3 +268,92 @@ AQS：是用来构建锁与同步器的框架 (是什么)，底层通过 CAS 修
 > - [ ] 介绍一个使用到锁与同步器的使用场景
 
 场景：同步会话数据到 ES 中，由于有不同的企业，并且会话数据量较大，为了提高性能。利用线程池开启多个线程处理同步任务。通过 CountDownLatch 等待线程池执行完成，利用 Semaphore 限制同步任务的数量，避免对 ES 造成太大的压力
+
+### JVM
+
+> - [ ] 对象在内存中的结构？
+
+* 对象头：
+  * MARKWORD：表示对象的锁状态、hashcode、GC 年龄
+  * ![](https://tva1.sinaimg.cn/large/008eGmZEly1gnxg956q77j30s206p3z0.jpg)
+  * KLASSWORD：指向方法区中Class信息的指
+* 实例数据
+* 填充数据
+
+> - [ ] JVM  内存结构？
+
+![img](https://tva1.sinaimg.cn/large/008eGmZEly1gnxgjikzboj30d70b2t9f.jpg)
+
+![img](https://tva1.sinaimg.cn/large/008eGmZEly1gnxgjlc52kj31400fnwg0.jpg)
+
+> - [ ] 什么是JMM [参考](https://zhuanlan.zhihu.com/p/258393139) [参考](https://zhuanlan.zhihu.com/p/29881777)
+
+JMM：用于屏蔽掉各种硬件和操作系统的内存访问差异，以实现让Java程序在各种平台下都能达到一致的并发效果。通过机制实现：可见性、原子性，从而实现多线程的并发安全
+
+> - [ ] 什么是Minor GC、Major GC和Full GC？
+
+Minor  GC：清理年轻代
+
+Major GC：清理老年代
+
+Full GC：清理年轻代、老年代、元空间
+
+> - [ ] Young GC的大概过程？
+
+在年轻代划分为 3 个区域，一个新生代，两个复活代。应用程序运行时，使用新生代与一个复活代。通过可达性分析标记不存活的对象，在 GC 时，将新生代与复活代中存活的对象复制到另外一个复活代中。然后清除新生代与复活代中的对象。在 GC 次数达到阈值后，移动对象到老年代中。
+
+时机：大多数情况下，对象在新生代的 Eden 中分配，当 Eden 空间不足时触发 Minor GC
+
+> - [ ] Young GC  触发的时机 ？
+
+当Eden区满时，触发Minor GC
+
+> - [ ] Full GC 触发的时机
+
+在 Minor GC 之前，会判断 Minor GC 是否安全，如果不安全则进行 Full GC。安全的条件：老年代中连续的空间大于新生代对象的总和或者大于历次晋升的平均水平。
+
+> - [ ] 可达性分析中哪些对象标记为 Root 对象？
+
+* 虚拟机栈中引用的对象
+* 方法区中常量引用的对象
+* 方法区中类静态属性引用的对象
+
+> 经典的垃圾收集器
+
+年轻代：Serial、ParNew、Paralle Scavenge
+
+老年代：CMS、Serial Old、Paralle Old
+
+年轻代/老年代：G1
+
+Serial：单线程，STW
+
+* 算法：复制
+* 过程：用户线程运行 - GC 线程(单线程) -  用户线程
+
+* 优点：简单高效
+* 缺点：停顿时间较长
+* 适用：小型应用
+
+Serial Old：
+
+* 算法：标记 - 整理
+
+ParNew：
+
+* 算法：复制
+* 过程：用户线程 - GC 线程 (多线程) - 用户线程 
+
+> JVM  类加载机制？
+
+|  加载 | - | 校验 - 准备 - 解析  | - | 初始化 | - | 使用 | - | 卸载 |
+
+> 类加载器有哪些？
+
+ApplicationClassLoad：应用类加载器
+
+BootClassLoad：启动加载器
+
+EXClassLoad：
+
+双亲委派模式，防止重复加载，特别是基础类不会被重复加载
